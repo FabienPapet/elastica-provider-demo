@@ -1,0 +1,105 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+
+    <div id="app">
+        <search></search>
+    </div>
+
+
+    <script>
+        const { createApp, ref , defineComponent, } = Vue
+
+        const search = defineComponent({
+            methods: {
+                doSearch() {
+                    if (this.timeout) {
+                        clearTimeout(this.timeout)
+                    }
+
+                    let url = '/api/products/search';
+
+                    if (this.search !== '') {
+                        url += '?query=' + this.search;
+                    }
+
+                    this.timeout = setTimeout(() => {
+                        fetch(url)
+                            .then(response => response.json())
+                            .then(data => this.results = data['hydra:member'])
+                    }, 500)
+                }
+            },
+            template: `
+                <div>
+                    <form @submit.prevent="doSearch">
+                        <input autofocus
+                               class="w-full h-16 px-3 rounded mb-8 focus:outline-none focus:shadow-outline text-xl px-8 shadow-lg"
+                               type="search" placeholder="Search..." v-model="search" @keyup="doSearch">
+                    </form>
+                    <p>https://nudger.fr/opendata</p>
+                    <table class="search-results table table-striped w-full">
+                        <tbody>
+                        <tr>
+                            <th class="px-6 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">
+                                EAN
+                            </th>
+                            <th class="px-6 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">
+                                brand
+                            </th>
+                            <th class="px-6 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">
+                                category
+                            </th>
+                            <th class="px-6 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">
+                                name
+                            </th>
+                            <th class="px-6 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left">
+                                price
+                            </th>
+                            <!--                        <th></th>-->
+                        </tr>
+                        <tr v-for="result in results" :key="result.code" class="border">
+                            <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs  p-4">
+                                {{ "{{ result.code  }}" }}
+                            </td>
+                            <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs p-4">
+                                {{ "{{ result.brand  }}" }}
+                            </td>
+                            <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs p-4">
+                                {{ "{{ result.categories  }}" }}
+                            </td>
+                            <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs p-4">
+                                {{ "{{ result.name  }}" }}
+                            </td>
+                            <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs p-4">
+                                {{ "{{ result.min_price  }}" }}
+                            </td>
+                            <!--                            <td><img :src="'https://picsum.photos/' +  result.code + '/200/300'" alt=""></td>-->
+                        </tr>
+                        <tbody>
+                    </table>
+                </div>`,
+            created() {
+                this.doSearch();
+            },
+            data() {
+                return {
+                    search: '',
+                    timeout: null,
+                    results: []
+                }
+            },
+        })
+
+
+        createApp({
+            components: {
+                search
+            },
+        }).mount('#app')
+    </script>
+{% endblock %}
